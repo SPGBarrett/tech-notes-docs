@@ -82,6 +82,15 @@ Git本地有三个工作区：工作目录（Working Directory），暂存区（
 
 
 
+**Git所管理文件的四种状态：**
+
+* Untracked: 未跟踪，此文件在文件夹中，但并没有加到git库，不参与版本控制。通过git add状态可以变为staged。
+* Unmodify: 文件已经入库，未修改，即版本库中的文件快照内容与问津完全一致，这种类型的文件有两种去处，如果其被修改，则变为modified，如果使用git rm移出版本库，则成为untracked。
+* Modified: 文件已修改，仅仅是修改，并没有其他的操作，这个文件也有两个去处，通过git add进入staged状态，使用git checkout 则丢弃修改过，返回到unmodify状态，这个git checkout即从库中取出文件，覆盖当前修改。
+* Staged: 暂存状态，执行git commit 则将修改同步到库中，这时库中的文件和本地的文件又变为一致，文件为unmodify状态，执行git reset HEAD filename 取消暂存，文件状态为Modified。
+
+
+
 ## Git实战操作
 
 通过上一章节了解了Git的基本原理及流程，下面就是具体的操作了。
@@ -188,10 +197,10 @@ git status
 git commit -m 这里写本次提交的信息说明
 ```
 
-例如：
+如果想要省去上一步的`git add.`的操作，可以直接使用下面指令：
 
 ```bash
-git commit -m 修改了bug
+git commit -a
 ```
 
 
@@ -332,13 +341,9 @@ git remote add origin 仓库链接的url
 git remote rm origin
 ```
 
+若要添加并使用多个仓库，参考：
 
-
-fatal: refusing to merge unrelated histories
-
-```
-$git pull origin master --allow-unrelated-histories
-```
+> **附加：推送到多个仓库的配置方案**
 
 
 
@@ -346,118 +351,24 @@ $git pull origin master --allow-unrelated-histories
 
 **Note：** **推送遵循先拉取pull，在推送push的准则。**如果使用git clone的方式，第一次推送可以不需要pull的操作，因为初始的文件是从远程仓库拉取并拷贝的。但是使用git init的方式，远程仓库可能存在本地仓库没有的文件，所以push之前首先要pull。之后的推送，无论哪种方式，都需遵循要先pull，然后再push的原则。
 
-从远程仓库拉取：
+所以，首先，从远程仓库拉取：
 
+```bash
+# 从名为origin的仓库拉取master分支
+git pull origin master
+```
 
+若报错：**fatal: refusing to merge unrelated histories** 则使用如下指令拉取：
 
+```bash
+git pull origin master --allow-unrelated-histories
+```
 
+**有多少个仓库要拉取，就分别对所有的仓库执行上述命令。**所有拉取执行之后，处理完所有的冲突之后(或者没有冲突)，就可以推送到远程服务器，使用如下指令：
 
-
-
-如果直接是clone的项目，直接push就行了
-
-如果是init的项目，首先需要设置origin，然后拉取，然后在push
-
-一会儿具体说明和测试
-
-
-
-
-
-**附加：推送到多个仓库的配置方案**
-
-
-
-前几天有次从github把项目 `pull`到本地时速度特别慢，想着应该是github服务器在国外的原因，于是就想把自己的项目在推送到github上时同步推送到国内的某个代码托管平台，经过一番比较之后我选择了码云。
- 那么如何方便快捷的把代码托管到多个平台呢？
- 例如我有下面两个仓库：
- `https://gitee.com/jiaiqi/test.git`
- `https://github.com/jiaiqi/test.git`
-
-## 第一种方式
-
-在本地项目文件夹执行  `git init`之后
- 先添加第一个仓库
- `git remote add origin https://gitee.com/jiaiqi/test.git`
- 再添加第二个仓库：
- `git remote set-url --add origin https://github.com/jiaiqi/test.git`
- 如果还有其他，则可以像添加第二个一样继续添加其他仓库。
- 然后使用下面命令提交：
- `git push origin --all`
- 打开.git/config，可以看到这样的配置：
-
-> [remote "origin"]
->  url = https://gitee.com/jiaiqi/test.git
->  fetch = +refs/heads/*:refs/remotes/origin/*
->  url = https://github.com/jiaiqi/test.git
-
-刚才的命令其实就是添加了这些配置。如果不想用命令行，可以直接编辑该文件，添加对应的url即可。
-
-## 第二种方式
-
-在本地项目文件夹执行  `git init`之后
- 先添加第一个仓库
- `git remote add gitee https://gitee.com/jiaiqi/test.git`
- 再添加第二个仓库：
- `git remote add github https://github.com/jiaiqi/test.git`
- 在这里为了方便区分，我把github仓库地址代号(上面代码add后面的单词)命名为`github`，码云仓库地址代号命名为`gitee`
- 在git bash中输入`git remote -v`可以查看本地仓库现在连接了那个远程仓库。
- 使用`git push 仓库代号 分支`提交代码到远程仓库
- 刚才我链接的两个远程仓库，推得时候就要这样写了：
- `git push github master`
- `git push gitee master`
-
-打开.git/config,此时配置文件如下所示
-
-
-
-
-
-IDEA添加多个远程仓库：
-
-
-
-
-
-
-
-## 实战小结 & 手册
-
-几个要解决的问题：
-
-1. 这里要记录多个分支的工作流
-
-2. git如何处理merge
-
-3. git如何删除文件
-
-4. dev以及多分支的使用
-
-5. 查看版本及历史等
-
-   --也就是要多看一下官方文档，估计用个两三天就会很熟练了，然后这就变成自己的习惯了。
-
-果然官方文档才是王道啊，反正有什么新的理解和知识，在这里更新就好。a very good reference!
-
-
-
-
-
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714082846671.png" alt="image-20200714082846671" style="zoom:80%;" />
-
-小结：
-
-实战中，只需要记住常用的几个命令：
-
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714081823361.png" alt="image-20200714081823361" style="zoom:80%;" />
-
-更多指令参考官方文档：https://git-scm.com/docs/git
-
-
-
-除非是需要修改，step1和step5，只需要在首次使用的时候配置好即可。
-
-
+```bash
+git push origin master
+```
 
 
 
@@ -519,7 +430,106 @@ git push -u origin master
 
 
 
-## Git多分支
+
+
+## 附加：推送到多个仓库的配置方案
+
+考虑到那一堵厚厚的墙，有时候github访问受限，所以有时候使用类似中国版github，gitee码云也是一个比较好的方案。于是就出现了需要将代码推到多个不同的仓库的问题。例如这两个仓库：
+
+```url
+https://gitee.com/spgbarrett/test.git
+https://github.com/spgbarrett/test.git
+```
+
+**方式1： 为同一个仓库名设置多个url**
+
+在完成了前面章节中提到的基本初始化操作之后，通过依次执行以下指令添加：
+
+```bash
+# 添加名为origin的仓库和其地址
+git remote add origin https://gitee.com/spgbarrett/test.git
+
+# 为名为origin的仓库添加另外的url
+git remote set-url --add origin https://github.com/spgbarrett/test.git
+
+# Push的命令
+git push origin --all
+```
+
+上文中也提到了，配置的本质是操作文件，如果不想使用命令，直接修改`.git/config`文件也可以。如下：
+
+> [remote "origin"]
+> url = https://gitee.com/spgbarrett/test.git
+> fetch = +refs/heads/*:refs/remotes/origin/*
+> url = https://github.com/spgbarrett/test.git
+
+
+
+**方式2： 设置多个仓库，每个仓库是单独的url （推荐）**
+
+在完成了前面章节中提到的基本初始化操作之后，通过依次执行以下指令添加：
+
+```bash
+# 添加第一个仓库，名字设为gitee
+git remote add gitee https://gitee.com/spgbarrett/test.git
+
+# 添加第二个仓库，名字设为github
+git remote add github https://github.com/spgbarrett/test.git
+
+# 拉取操作指令
+git pull gitee master
+git pull github master
+
+# 推送操作指令
+git push gitee master
+git push github master
+```
+
+个人比较推荐这种配置，可读性高，而且可操作性也高。
+
+
+
+**方式3：IDEA可视化添加**
+
+在菜单栏选择：VCS->Git->Remotes... 进入如下对话框，然后手动添加即可：
+
+<img src="Git快速上手及IDEA集成Git.assets/image-20200714192458615.png" alt="image-20200714192458615" style="zoom:50%;" />
+
+
+
+
+
+## 实战小结 & 手册
+
+在实战中，Step1，Step2，Step5，Step6在第一次做完了之后，就修改的比较少了，平时大部分的工作就是循环执行Step3，Step4，Step7。所以只需要熟记少量的命令：
+
+<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714081823361.png" alt="image-20200714081823361" style="zoom:80%;" />
+
+下面是一个实战的流程指令总结，在对代码进行了修改，完成了一天的工作，需要提交代码，涉及到的一些指令如下，方便参考使用：
+
+```bash
+git add .
+git commit -m "commit message here"
+git pull origin master
+git pull origin master --allow-unrelated-histories
+git push origin master
+```
+
+
+
+Coming Up Next：
+
+* 多分支dev的工作流
+* merge问题处理
+* git取消某些文件的跟踪
+* git删除文件
+* 查看历史版本和回滚
+
+更多指令参考官方文档：https://git-scm.com/docs/git
+
+
+
+## Git多分支工作流
 
 分支相关的指令：
 
