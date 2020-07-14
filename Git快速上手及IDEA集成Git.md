@@ -1,7 +1,5 @@
 # Git快速上手及IDEA集成Git
 
-
-
 [TOC]
 
 ## 集中与分布式，Git和SVN
@@ -346,6 +344,12 @@ $git pull origin master --allow-unrelated-histories
 
 **Step7: 推送到远程仓库**
 
+**Note：** **推送遵循先拉取pull，在推送push的准则。**如果使用git clone的方式，第一次推送可以不需要pull的操作，因为初始的文件是从远程仓库拉取并拷贝的。但是使用git init的方式，远程仓库可能存在本地仓库没有的文件，所以push之前首先要pull。之后的推送，无论哪种方式，都需遵循要先pull，然后再push的原则。
+
+从远程仓库拉取：
+
+
+
 
 
 
@@ -409,9 +413,31 @@ $git pull origin master --allow-unrelated-histories
 
 
 
+IDEA添加多个远程仓库：
 
 
 
+
+
+
+
+## 实战小结 & 手册
+
+几个要解决的问题：
+
+1. 这里要记录多个分支的工作流
+
+2. git如何处理merge
+
+3. git如何删除文件
+
+4. dev以及多分支的使用
+
+5. 查看版本及历史等
+
+   --也就是要多看一下官方文档，估计用个两三天就会很熟练了，然后这就变成自己的习惯了。
+
+果然官方文档才是王道啊，反正有什么新的理解和知识，在这里更新就好。a very good reference!
 
 
 
@@ -489,7 +515,7 @@ git pull origin master
 git push -u origin master
 ```
 
-**Note：**如果使用git clone的方式，第一次推送可以不需要pull的操作，因为初始的文件是从远程仓库拉取并拷贝的。但是使用git init的方式，远程仓库可能存在本地仓库没有的文件，所以push之前首先要pull。之后的推送，无论哪种方式，都需遵循要先pull，然后再push的原则。
+> **Note：**如果使用git clone的方式，第一次推送可以不需要pull的操作，因为初始的文件是从远程仓库拉取并拷贝的。但是使用git init的方式，远程仓库可能存在本地仓库没有的文件，所以push之前首先要pull。之后的推送，无论哪种方式，都需遵循要先pull，然后再push的原则。
 
 
 
@@ -565,6 +591,12 @@ git branch -dr remote/分支名称
 <img src="Git快速上手及IDEA集成Git.assets/image-20200714105731903.png" alt="image-20200714105731903" style="zoom:67%;" />
 
 参考Github生成SSH秘钥的说明文档：https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh
+
+
+
+## 参考文献
+
+https://git-scm.com/book/en/v2
 
 
 
