@@ -336,13 +336,19 @@ git remote rm origin
 
 
 
+fatal: refusing to merge unrelated histories
 
-
-
+```
+$git pull origin master --allow-unrelated-histories
+```
 
 
 
 **Step7: 推送到远程仓库**
+
+
+
+
 
 如果直接是clone的项目，直接push就行了
 
@@ -429,18 +435,6 @@ git remote rm origin
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## IDEA集成Git
 
 **Step1：**将IDEA项目与Git绑定起来
@@ -494,6 +488,8 @@ git pull origin master
 # 将本地仓库推送到远程仓库(以master分支为例)
 git push -u origin master
 ```
+
+**Note：**如果使用git clone的方式，第一次推送可以不需要pull的操作，因为初始的文件是从远程仓库拉取并拷贝的。但是使用git init的方式，远程仓库可能存在本地仓库没有的文件，所以push之前首先要pull。之后的推送，无论哪种方式，都需遵循要先pull，然后再push的原则。
 
 
 
