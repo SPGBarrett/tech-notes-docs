@@ -6,11 +6,11 @@
 
  **集中版本控制：**所有版本的数据都保存在服务器上，协同开发者从服务器上同步更新或者上传自己的修改。
 
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714072247751.png" alt="image-20200714072247751" style="zoom:70%;" />
+<img src="PicResDoNotDelete.assets\image-20200714072247751.png" alt="image-20200714072247751" style="zoom:70%;" />
 
 **分布式版本控制：**所有版本信息仓库全部同步到本地的每个用户，可以在本地查看所有版本，可以离线提交，只需要在联网的时候push到服务器即可。每个人都拥有所有代码，只要有一个人的设备没有问题就能恢复所有代码，但增加了本地储存空间。
 
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714072806234.png" alt="image-20200714072806234" style="zoom:70%;" />
+<img src="PicResDoNotDelete.assets\image-20200714072806234.png" alt="image-20200714072806234" style="zoom:70%;" />
 
 
 
@@ -64,7 +64,7 @@ Git迅速成为最流行的分布式版本控制系统，尤其是2008年，GitH
 
 Git本地有三个工作区：工作目录（Working Directory），暂存区（Stage/Index），资源库（Repository）。远程有一个工作区：远程仓库（Remote Directory）。本地的三个工作区的关系图如下：
 
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714080853914.png" alt="image-20200714080853914" style="zoom:67%;" />
+<img src="PicResDoNotDelete.assets\image-20200714080853914.png" alt="image-20200714080853914" style="zoom:67%;" />
 
 本地的这些，其实是以文件的形式保存在工程所在目录下的.git文件夹中。
 
@@ -78,7 +78,7 @@ Git本地有三个工作区：工作目录（Working Directory），暂存区（
 
 由此，Git管理的文件有三种状态：modified已修改；staged已暂存；committed已提交
 
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714081409203.png" alt="image-20200714081409203" style="zoom:80%;" />
+<img src="PicResDoNotDelete.assets\image-20200714081409203.png" alt="image-20200714081409203" style="zoom: 50%;" />
 
 
 
@@ -493,7 +493,7 @@ git push github master
 
 在菜单栏选择：VCS->Git->Remotes... 进入如下对话框，然后手动添加即可：
 
-<img src="Git快速上手及IDEA集成Git.assets/image-20200714192458615.png" alt="image-20200714192458615" style="zoom:50%;" />
+<img src="PicResDoNotDelete.assets/image-20200714192458615.png" alt="image-20200714192458615" style="zoom:50%;" />
 
 
 
@@ -503,7 +503,7 @@ git push github master
 
 在实战中，Step1，Step2，Step5，Step6在第一次做完了之后，就修改的比较少了，平时大部分的工作就是循环执行Step3，Step4，Step7。所以只需要熟记少量的命令：
 
-<img src=".\Git快速上手及IDEA集成Git.assets\image-20200714081823361.png" alt="image-20200714081823361" style="zoom:80%;" />
+<img src="PicResDoNotDelete.assets\image-20200714081823361.png" alt="image-20200714081823361" style="zoom:80%;" />
 
 下面是一个实战的流程指令总结，在对代码进行了修改，完成了一天的工作，需要提交代码，涉及到的一些指令如下，方便参考使用：
 
@@ -594,11 +594,11 @@ git branch -dr remote/分支名称
 
 **（4）进入Github你的账户的Setting中，并进入SSH Key的设置页面**
 
-<img src="Git快速上手及IDEA集成Git.assets/image-20200714101833623.png" alt="image-20200714101833623" style="zoom:67%;" />
+<img src="PicResDoNotDelete.assets/image-20200714101833623.png" alt="image-20200714101833623" style="zoom:67%;" />
 
 进入后，点击“new ssh key” ，然后将id_rsa.pub文件中的内容拷贝进去，点击“add ssh key"就完成了。
 
-<img src="Git快速上手及IDEA集成Git.assets/image-20200714105731903.png" alt="image-20200714105731903" style="zoom:67%;" />
+<img src="PicResDoNotDelete.assets/image-20200714105731903.png" alt="image-20200714105731903" style="zoom:67%;" />
 
 参考Github生成SSH秘钥的说明文档：https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh
 

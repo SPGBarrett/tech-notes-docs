@@ -31,7 +31,7 @@ http://www.slf4j.org/
 
 以上是官方的介绍，可以知道，SLF4J并没有封装实现Log的功能，而是对主流Log框架进行了适配与抽象，其负责与开发者交互，而具体的功能由其后端的各个Log框架实现。由此，用户可以在不修改代码的情况下，切换使用的Log框架。SLF4J的架构图如下：
 
-![image-20200713144619142](.\企业级日志.assets\image-20200713144619142.png)
+![image-20200713144619142](PicResDoNotDelete.assets\image-20200713144619142.png)
 
 如果需要更换SLF4J使用的后端Log实现框架，只需要引入不同的jar包即可。例如：如果要从java.util.logging切换到log4j，只需要将slf4j-jdk14-1.7.28.jar替换为slf4j-log4j12-1.7.28.jar。
 
@@ -39,7 +39,7 @@ http://www.slf4j.org/
 
 其与几个常用Log框架的关系：
 
-<img src=".\Springboot日志整合大集合.assets\image-20200713163509072.png" alt="image-20200713163509072" style="zoom:50%;" />
+<img src="PicResDoNotDelete.assets\image-20200713163509072.png" alt="image-20200713163509072" style="zoom: 33%;" />
 
 
 
