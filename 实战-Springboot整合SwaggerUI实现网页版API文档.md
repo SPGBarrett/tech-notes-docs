@@ -1,4 +1,4 @@
-# Springboot 整合SwaggerUI 实现网页版API文档
+# 实战-Springboot 整合SwaggerUI 实现网页版API文档
 
 ## 1. 单模组/单功能模块整合SwaggerUI
 
@@ -212,7 +212,7 @@ hidden–隐藏
 name–参数ming 
 value–参数说明 
 dataType–数据类型 
-paramType–参数类型 
+paramType–参数类型 （query, path, body, form）
 example–举例说明
 
 ### 1.5 显示效果
