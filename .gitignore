@@ -2,5 +2,5 @@
 *.doc
 *.docx
 
-Init MarkdownNotes.md
-Markdown语法参考.md
+./Init MarkdownNotes.md
+./Markdown语法参考.md
