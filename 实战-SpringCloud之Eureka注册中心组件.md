@@ -8,7 +8,7 @@ Eureka是Spring Cloud Netflix中用于实现注册中心功能的组件。能够
 
 
 
-## 代码实现
+## 注册中心代码实现
 
 ### 第一步：新建项目或Module
 
@@ -31,6 +31,70 @@ Eureka是Spring Cloud Netflix中用于实现注册中心功能的组件。能够
         </dependency>
 ```
 
+### 第三步：开启注册中心功能
+
+在注册中心Module的启动类中，加入@EnableEurekaServer的标签：
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+
+@SpringBootApplication
+@EnableEurekaServer
+public class EurekaServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServiceApplication.class, args);
+    }
+
+}
+```
+
+
+
+### 第四步： 参数配置
+
+在application.properties文件中添加参数配置，基本的参数配置及说明如下：
+
+```properties
+spring.application.name=eureka-service
+server.port=5800
+spring.profiles.active=dev
+eureka.server.wait-time-in-ms-when-sync-empty=5
+# Register Eureka itself:
+#eureka.client.register-with-eureka=false
+# Client fetch:
+#eureka.client.fetch-registry=false
+# Default url access: (Be aware!!! should be "defaultZone", not "default-zone", in both eureka server and client settings)
+eureka.client.service-url.defualtZone=http://${eureka.instance.hostname}:${server.port}/eureka/
+logging.level.com.netflix.eureka=OFF
+logging.level.com.netflix.discovery=OFF
+
+#一旦进入保护模式，Eureka Server将会尝试保护其服务注册表中的信息，不再删除服务注册表中的数据
+eureka.server.enable-self-preservation=false
+#每间隔3秒扫描一次注册的服务，将在客户指定的eureka.instance.leaseExpirationDurationInSeconds时间内没有发送心跳的服务下线
+eureka.server.eviction-interval-timer-in-ms=5000
+#是否允许将自己注册为服务
+eureka.client.registerWithEureka=false
+eureka.client.fetch-registry=false
+
+```
+
+通过上述简单的几步，就能实现基本的注册中心功能了。根据自己设置好的端口（实例中为5800），通过http://localhost:5800/ 就能访问到Eureka的页面。
+
+
+
+## 需要在注册中心注册的模块代码实现
+
+各个功能模组如果需要在Eureka注册中心注册，需要添加一些简单的代码。
+
+### 第一步：新建项目或Module
+
+使用IDEA的Spring Initializer新建一个Module，如果是已经有的Module，则跳过这一步。
+
+### 第二步：引入依赖
+
 在需要在注册中心注册的Module的pom.xml文件中，添加依赖：
 
 ```xml
@@ -45,97 +109,21 @@ Eureka是Spring Cloud Netflix中用于实现注册中心功能的组件。能够
         </dependency>
 ```
 
+### 第三步：开启注册中心功能
 
-
-### 第三步：开启网关功能
-
-进入Application启动类，加入@EnableZuulProxy注解：
+在注册中心Module的启动类中，加入@EnableDiscoveryClient的标签：
 
 ```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableZuulProxy
-public class ZuulGatewayApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(ZuulGatewayApplication.class, args);
-    }
-
+public class SmartsiteApplication {
+    public static void main(String[] args) { SpringApplication.run(SmartsiteApplication.class, args); }
 }
-```
-
-由于Zuul内置Hystrix，若需要实现基本的熔断和降级，直接通过实现FallbackProvider接口实现，可以新建一个ServiceFallbackProvider类，并添加如下代码：
-
-```java
-package com.barrett.zuulgateway;
-
-import org.springframework.cloud.netflix.zuul.filters.route.FallbackProvider;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-/**
- * @program: smartsite-master
- * @description: The implementation of Hystrix circuit breaker mechanism
- * We should config hystrix in application.properties and implement this class
- * @author: Barrett
- * @create: 2020-05-15 16:03
- **/
-@Component
-public class ServiceFallbackProvider implements FallbackProvider {
-    @Override
-    public String getRoute() {
-        //设置熔断的服务名
-        //如果是所有服务则设置为*
-        return "ai-alert-service";
-    }
-
-    @Override
-    public ClientHttpResponse fallbackResponse(String route, Throwable cause) {
-        return new ClientHttpResponse(){
-
-            @Override
-            public HttpHeaders getHeaders() {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                return headers;
-            }
-
-            @Override
-            public InputStream getBody() throws IOException {
-                String returnString = "{'code':000,'message': server error, circuit breaker hystrix in effect}";
-                return new ByteArrayInputStream(returnString.getBytes());
-            }
-
-            @Override
-            public HttpStatus getStatusCode() throws IOException {
-                return HttpStatus.OK;
-            }
-
-            @Override
-            public int getRawStatusCode() throws IOException {
-                return 200;
-            }
-
-            @Override
-            public String getStatusText() throws IOException {
-                    return "{code:404,message:service error =_=}";
-            }
-
-            @Override
-            public void close() {
-
-            }
-        };
-    }
-}
-
 ```
 
 
@@ -145,59 +133,205 @@ public class ServiceFallbackProvider implements FallbackProvider {
 在application.properties文件中添加参数配置，基本的参数配置及说明如下：
 
 ```properties
-##Set application name and port:
-spring.application.name=zuul-gateway
-server.port=5801
+spring.application.name=smartsite-service
+spring.profiles.active=dev
+##Server Port :
+server.port=5051
 
-##Eureka settings, register zuul itself to Eureka:
-eureka.instance.prefer-ip-address=true
+# The default URL that can access Eureka dashboard:
 eureka.client.register-with-eureka=true
+# Client fetch:
 eureka.client.fetch-registry=true
-eureka.client.serviceUrl.defaultZone=http://localhost:5800/eureka/
+# 每间隔5s，向服务端发送一次心跳，证明自己依然存活
+eureka.instance.lease-renewal-interval-in-seconds=5
+# 告诉服务端，如果我10s之内没有给你发心跳，将我踢出掉
+eureka.instance.lease-expiration-duration-in-seconds=10
+# Eureka Server运行的地址
+eureka.client.service-url.defaultZone=http://localhost:5800/eureka/
 
-##Zuul gateway poxy settings:
-zuul.host.connect-timeout-millis=10000
-zuul.host.socket-timeout-millis=20000
-zuul.host.max-per-route-connections=50
-zuul.host.max-total-connections=400
-
-# Circuit Breaker settings: (Using Zuul embedded Hystrix)
-hystrix.command.default.execution.isolation.thread.timeout-in-milliseconds=6000
-
-##Load Balance Settings:
-# Zuul embedded Ribbon Settings:
-ribbon.connection-timeout=500
-ribbon.read-timeout=2000
-
-# The route strategy: Assigning the app-name to another certain name. You can also annotate this and use the original app-name
-# All the services that will be loadbalanced by zuul should be listed here
-zuul.routes.ai-alert-service.path=/ai-alert-service/** 
-zuul.routes.face-detect-service.path=/face-detect-service/**
-zuul.routes.smartsite-service.path=/smartsite-service/**
-zuul.routes.patrolmodule-service.path=/patrolmodule-service/**
-#Set a prefix that will be applied to all paths:
-zuul.prefix=/zb-api
-# If Eureka is not working, the subsequent code should be added so that Zuul can find url by app-name
-#zuul.routes.ai-alert-service.url=http://127.0.0.1:6002
-
-#Disable original access:
-#Disable all services:
-zuul.ignored-services=*
-#Disable specified services using app name:
-#zuul.ignored-services=face-detect-service
-#zuul.ignored-services=smartsite-service
 ```
 
-一些简单的说明：
+通过上述几步就能将该module运行的实例添加到注册中心了，在注册中心页面中可以查看到该实例，如图：
 
-`zuul.routes.ai-alert-service.path=/ai-alert-service/** `这句就是说为名字为`ai-alert-service`的服务设置了访问路径，由于设置了`zuul.prefix=/zb-api`，所以路径前还需要加上这个前缀。`zuul.ignored-services="*"`这句话设置了无法通过默认路由路径（默认路由路径就是以app-name作为路径，如/ai-alert-service/** ）访问服务，只能通过网关配置的路由的方式访问（例子中自定义配置的和默认的是一样的，都是/ai-alert-service/** ，当然也可以配置成别的路径）。如果不设置这个，则两种方式都可访问到服务。另外，Zuul需要通过Eureka获取到各个服务的url，如果没有使用Eureka，则必须在.properties文件中指定每个服务的url地址。
+<img src="PicResDoNotDelete.assets/image-20200720102029687.png" alt="image-20200720102029687" style="zoom:50%;" />
 
-于是，假设Zuul运行端口为6100，服务的端口运行在6000。则访问`ai-alert-service`服务的
 
-`test`API的路径由`主机IP：6000/test`变为`主机IP：6100/zb-api/ai-alert-service/test`
+
+## Eureka服务下线邮件通知
+
+### 第一步：添加依赖
+
+在pom.xml文件中添加如下依赖，提供邮件发送的功能：
+
+```xml
+<!-- SpringBoot 发送邮件 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>2.2.6.RELEASE</version>
+        </dependency>
+```
+
+### 第二步：添加参数配置
+
+在.properties文件中添加以下参数配置：
+
+```properties
+#协议
+spring.mail.protocol=smtp
+#字符集
+spring.mail.default-encoding=UTF-8
+#电子邮件地址
+spring.mail.host=smtp.163.com
+#邮箱账号名
+spring.mail.username=xxxxx.163.com
+#邮箱开启服务时提供的授权密码
+spring.mail.password=xxxxxx
+#NVSYAHGMTLJTHZCN
+#邮箱服务器默认端口
+spring.mail.port=25
+```
+
+这些均是发送邮件需要配置的一些参数，这里是以163邮箱为例，如果需要使用其他邮箱，做相应的修改即可。需要注意，邮箱需要开启SMTP服务才可以。
+
+
+
+### 第三步： 下线事件监听
+
+新建一个类，用于实现事件监听功能。这里将其命名为EurekaEventListenerService，代码如下：
+
+```java
+package com.barrett.eurekaservice.service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.netflix.eureka.server.event.*;
+import org.springframework.context.event.EventListener;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+
+/**
+ * @program: smartsite-master
+ * @description: Implement all Eureka related events
+ * @author: Barrett
+ * @create: 2020-07-13 19:06
+ **/
+@Component
+public class EurekaEventListenerService {
+    // Define logger:
+    private final static Logger logger = LoggerFactory.getLogger(EurekaEventListenerService.class);
+    @Autowired
+    private JavaMailSender jms;
+
+    // **********Define and implement event listeners: ******************
+    // Service cancelled event:
+    @EventListener(condition = "#event.replication==false")
+    public void listen(EurekaInstanceCanceledEvent event){
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("时间：" + sdf.format(event.getTimestamp()) + " ");
+        msgBuilder.append("服务: " + event.getAppName() + " ");
+        msgBuilder.append("ID: " + event.getServerId() + " ");
+        msgBuilder.append("已下线" + "\n");
+        String msg = msgBuilder.toString();
+        logger.info(msg);
+        // Send Email to DevOps:
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                send(msg);
+            }
+        }).start();
+    }
+
+    // Service registered event:
+    @EventListener(condition = "#event.replication==false")
+    public void listen(EurekaInstanceRegisteredEvent event){
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("时间：" + sdf.format(event.getTimestamp()) + " ");
+        msgBuilder.append("服务: " + event.getInstanceInfo() + " ");
+        msgBuilder.append("Class: " + event.getClass() + " ");
+        msgBuilder.append("已注册" + "\n");
+        String msg = msgBuilder.toString();
+        logger.info(msg);
+    }
+
+    // Service renewed (heartbeat) event:
+    @EventListener(condition = "#event.replication==false")
+    public void listen(EurekaInstanceRenewedEvent event){
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("时间：" + sdf.format(event.getTimestamp()) + " ");
+        msgBuilder.append("服务: " + event.getAppName() + " ");
+        msgBuilder.append("ID: " + event.getServerId() + " ");
+        msgBuilder.append("心跳" + "\n");
+        String msg = msgBuilder.toString();
+        logger.info(msg);
+    }
+
+    // Eureka service launched event:
+    @EventListener(condition = "#event.replication==false")
+    public void listen(EurekaRegistryAvailableEvent event){
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("时间：" + sdf.format(event.getTimestamp()) + " ");
+        msgBuilder.append("服务: " + event.getSource() + " ");
+        msgBuilder.append("Class: " + event.getClass() + " ");
+        msgBuilder.append("开启服务" + "\n");
+        String msg = msgBuilder.toString();
+        logger.info(msg);
+    }
+
+    // Eureka service started event:
+    @EventListener(condition = "#event.replication==false")
+    public void listen(EurekaServerStartedEvent event){
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("时间：" + sdf.format(event.getTimestamp()) + " ");
+        msgBuilder.append("服务: " + event.getSource() + " ");
+        msgBuilder.append("Class: " + event.getClass() + " ");
+        msgBuilder.append("服务启动了!" + "\n");
+        String msg = msgBuilder.toString();
+        logger.info(msg);
+    }
+
+    private void send(String msg){
+        //用于封装邮件信息的实例
+        SimpleMailMessage smm = new SimpleMailMessage();
+        //由谁来发送邮件, 这里的名字必须和发件邮箱一致，否则报错
+        smm.setFrom("xxxx@163.com");
+        //smm.setFrom("xxxx@qq.com");
+        //邮件主题
+        smm.setSubject("服务下线通知");
+        //邮件内容
+        smm.setText(msg);
+        //接受邮件
+        smm.setTo(new String[]{"xxxx@163.com", "xxxx@qq.com"});
+        try {
+            jms.send(smm);
+        } catch (Exception e) {
+            logger.info(msg+"错误",e);
+        }
+    }
+}
+```
+
+以上就能实现服务下线发送邮件的功能了，如果需要在事件触发后实现其他的通知功能，在相应地方修改代码即可。需要注意的是，在Eureka中注册的模组的.properties配置文件中需要有如下配置，否则Eureka会自动维持注册状态，不会触发下线事件：
+
+```properties
+# 每间隔5s，向服务端发送一次心跳，证明自己依然存活
+eureka.instance.lease-renewal-interval-in-seconds=5
+# 告诉服务端，如果我10s之内没有给你发心跳，将我踢出掉
+eureka.instance.lease-expiration-duration-in-seconds=10
+```
 
 
 
 ## 小结
 
-Zuul组件功能的实现，和大部分Spring Cloud组件实现基本功能的流程一致，即`创建项目->引入依赖->通过注解开启功能->参数配置`这几步。Zuul模块服务运行之后，就能实现通过Zuul来访问到其他的服务了。
+Eureka组件功能的实现，和大部分Spring Cloud组件实现基本功能的流程一致，即`创建项目->引入依赖->通过注解开启功能->参数配置`这几步。Eureka模块服务运行之后，就能实现通过Eureka页面来查看服务注册信息了。
