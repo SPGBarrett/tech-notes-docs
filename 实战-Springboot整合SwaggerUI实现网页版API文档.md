@@ -1,5 +1,7 @@
 # 实战-Springboot 整合SwaggerUI 实现网页版API文档
 
+[TOC]
+
 ## 1. 单模组/单功能模块整合SwaggerUI
 
 ### 1.1 添加依赖
@@ -312,17 +314,46 @@ public class MultiDocConfig implements SwaggerResourcesProvider {
 
 完成以上配置之后，分别启动Eureka注册中心，Zuul网关和每个单独的组件，使用**http://${网关运行的IP}:${网关运行的端口}/swagger-ui.html**来访问SwaggerUI文档，如下图所示：
 
-<img src="C:\Users\spg_b\AppData\Roaming\Typora\typora-user-images\image-20200702190240633.png" alt="image-20200702190240633" style="zoom:50%;" />
+<img src="PicResDoNotDelete.assets/image-20200723090602888.png" alt="image-20200723090602888" style="zoom:50%;" />
 
 
 
-通过右上角的下拉菜单，可以切换不同组件的API文档。
+通过右上角的下拉菜单，可以切换不同组件的APaI文档。
 
 
 
+## 3. 有Nginx反向代理的SwaggerUI访问设置
 
+如果swaggerUI网关部署在12001端口，而前端访问的时候是通过Nginx反向代理进行路由的，那么这种情况下要通过Nginx访问到swaggerUI就需要对swaggerUI的静态资源进行代理配置。在nginx.conf文件中添加如下配置：
 
+```xml
+	# For spring boot swagger relocation:
+	location ~^/swagger/(.*) {
+		proxy_redirect off;
+		# proxy_set_header Host $host;
+		proxy_set_header Host $host:$server_port; #添加:$server_port
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_pass http://127.0.0.1:12001/$1;
+	}
+```
 
+以上`/swagger`这个路径是可以自定义的，这里仅以其为例子。假设Nginx运行与8331端口，那么访问到swaggerUI的路径为：
+
+`http://{IP地址}:8331/swagger/swagger-ui.html` 这种配置方式，访问Zuul网关进一步链接到子模块的swaggerUI文档也是没有问题的。
+
+这里顺带附上一些Nginx基本命令，以便操作：(首先需要定位到nginx目录下)
+
+```shell
+# 启动Nginx
+start nginx
+# 停止Nginx
+nginx -s stop
+# 退出Nginx
+nginx -s quit
+# 重启Nginx
+nginx -s reload
+```
 
 
 
