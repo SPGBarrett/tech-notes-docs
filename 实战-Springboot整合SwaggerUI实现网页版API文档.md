@@ -318,7 +318,7 @@ public class MultiDocConfig implements SwaggerResourcesProvider {
 
 
 
-通过右上角的下拉菜单，可以切换不同组件的APaI文档。
+通过右上角的下拉菜单，可以切换不同组件的API文档。
 
 
 

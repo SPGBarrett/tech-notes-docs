@@ -151,7 +151,7 @@ Codes Never Lie.
 #### 3.2.1 Web服务器
 
 * IIS
-* Niginx
+* Nginx
 
 #### 3.2.2 应用服务器
 
